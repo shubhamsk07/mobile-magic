@@ -3,4 +3,5 @@
  - Send the user response back to the LLM. If a user is changing a file, the LLM needs to be aware of this. 
  - UI cleanups
  - Figure out why npm install doesnt work from time to time. Most probably we need to run them sequentially so create some sort of async queue to do it.
- 
+- Create a load balancer service that routes requests from id.worker.100xdevs.com to the respective worker for that project
+- Add multiplayer mode
