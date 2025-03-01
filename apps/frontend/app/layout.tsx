@@ -35,7 +35,12 @@ export default function RootLayout({
         <ClerkProvider>
           <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-          >
+          >  <img
+          src="/background.png"
+          alt="Background"
+          className="absolute top-0 left-0 w-full  object-cover opacity-50 -z-10 h-full"
+        />
+
             {children}
           </body>
         </ClerkProvider>
