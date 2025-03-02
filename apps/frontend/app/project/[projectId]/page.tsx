@@ -1,5 +1,5 @@
 "use client";
-import { Appbar } from "@/components/Appbar";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WORKER_URL } from "@/config";
@@ -8,14 +8,14 @@ import { usePrompts } from "@/hooks/usePrompts";
 import { useActions } from "@/hooks/useActions";
 import axios from "axios";
 import {Loader} from "@/components/Loader"
-import { useState } from "react";
+import { use, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { WORKER_API_URL } from "@/config";
 
-export default function ProjectPage({ params }: { params: { projectId: string } }) {
-    
-    const { prompts } = usePrompts(params.projectId);
-    const { actions } = useActions(params.projectId);
+export default function ProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
+    const {projectId} = use(params)
+    const { prompts } = usePrompts(projectId);
+    const { actions } = useActions(projectId);
     const [prompt, setPrompt] = useState("");
     const { user } = useUser();
     const { getToken } = useAuth();
@@ -64,7 +64,7 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
                             const token = await getToken();
                             await axios.post(
                                 `${WORKER_API_URL}/prompt`,
-                                { projectId:params.projectId, 
+                                { projectId, 
                                   prompt },
                                 { headers: { Authorization: `Bearer ${token}` } }
                             );
