@@ -3,19 +3,26 @@ import { Appbar } from "@/components/Appbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WORKER_URL } from "@/config";
-import { Send } from "lucide-react";
+import { Check, Send } from "lucide-react";
 import { usePrompts } from "@/hooks/usePrompts";
 import { useActions } from "@/hooks/useActions";
 import axios from "axios";
+import {Loader} from "@/components/Loader"
 import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { WORKER_API_URL } from "@/config";
 
 export default function ProjectPage({ params }: { params: { projectId: string } }) {
+    
     const { prompts } = usePrompts(params.projectId);
     const { actions } = useActions(params.projectId);
     const [prompt, setPrompt] = useState("");
+    const { user } = useUser();
     const { getToken } = useAuth();
+
+    if(!user){
+        return <div className="flex h-screen justify-between items-center"><Loader /></div>
+    }
 
     return (
         <div className="flex h-screen">
@@ -30,10 +37,10 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
                             alt="Profile"
                             className="w-8 h-8 rounded-full"
                         />
-                      
+
                         {prompts.filter((p) => p.type === "USER").map((p) => (
-                        <div key={p.id}>{p.content}</div>
-                    ))}
+                            <div key={p.id}>{p.content}</div>
+                        ))}
                     </div>
 
                     <div style={{ backgroundColor: "rgb(39, 39, 39)" }} className="relative h-fit w-full mt-6 pb-6  rounded-md">
@@ -57,7 +64,8 @@ export default function ProjectPage({ params }: { params: { projectId: string } 
                             const token = await getToken();
                             await axios.post(
                                 `${WORKER_API_URL}/prompt`,
-                                { projectId, prompt },
+                                { projectId:params.projectId, 
+                                  prompt },
                                 { headers: { Authorization: `Bearer ${token}` } }
                             );
                         }}

@@ -1,7 +1,6 @@
 import { Appbar } from "@/components/Appbar";
 import { Button } from "@/components/ui/button";
 import { Prompt } from "@/components/Prompt";
-import Image from "next/image";
 import { TemplateButtons } from "@/components/TemplateButtons";
 import { ProjectsDrawer } from "@/components/ProjectsDrawer";
 import AnimatedComp from "@/components/AnimatedComp";
@@ -12,7 +11,7 @@ export default function Home() {
   return (
     <div className="p-4">
       <Appbar />
-
+    <div className=" relative mt-4 border-b-2 border-zinc-400/50 w-screen right-4" />
       <div className="flex justify-center mt-16">
      <AnimatedComp />
       </div>

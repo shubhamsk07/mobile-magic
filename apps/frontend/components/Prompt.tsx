@@ -2,11 +2,11 @@
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { AnimatePresence, motion } from "framer-motion";
-import {Loader} from "@/components/Loader"
-import { ArrowRight } from "lucide-react";
+import * as Toast from "@radix-ui/react-toast";
+import { AlertCircleIcon, ArrowRight } from "lucide-react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { BACKEND_URL, WORKER_API_URL } from "@/config";
 import { useRouter } from "next/navigation";
 
@@ -18,11 +18,14 @@ const texts = [
 ];
 
 export function Prompt() {
+  const {user} = useUser();
   const [prompt, setPrompt] = useState("");
-  const [loading,setLoading] = useState(false);
   const [placeholder, setPlaceholder] = useState("");
   const { getToken } = useAuth();
   const router = useRouter();
+  const [toastMessage, setToastMessage] = useState(""); // Manage toast message
+  const [open, setOpen] = useState(false); // Control toast visibility
+
 
   useEffect(() => {
     let textIndex = 0;
@@ -38,7 +41,7 @@ export function Prompt() {
           charIndex--;
           setPlaceholder(currentText.slice(0, charIndex));
         } else {
-          // Move to next text after deletion
+         
           isDeleting = false;
           textIndex = (textIndex + 1) % texts.length;
         }
@@ -63,9 +66,8 @@ export function Prompt() {
     return () => clearTimeout(timeoutId); // Cleanup function to prevent speed-up issues
   }, []);
 
-  if(loading){
-          return <div className="flex h-screen justify-center items-center"><Loader /></div>
-      }
+
+
     
   return (
     <div className="flex rounded-xl border-xl border border-white/20 bg-zinc-600/50 text-white max-sm:w-md max-sm:mx-4 ">
@@ -85,10 +87,18 @@ export function Prompt() {
             className="flex justify-end px-4"
           >
             <Button
+            className="bg-indigo-500 text-white/90 "
+              variant={"secondary"}
               onClick={async () => {
-                setLoading(true)
 
+                if(!user){
+                  setToastMessage("Please Signin/Signup first!");
+                  setOpen(true);
+                  return
+                }
+                router.push(`/loading`);
                 const token = await getToken();
+               
                 const response = await axios.post(
                   `${BACKEND_URL}/project`,
                   { prompt: prompt },
@@ -98,8 +108,8 @@ export function Prompt() {
                   projectId: response.data.projectId,
                   prompt: prompt,
                 });
-                router.push(`/project/${response.data.projectId}`);
-                setLoading(false)
+                
+                router.replace(`/project/${response.data.projectId}`);
               }}
             >
               <ArrowRight />
@@ -107,6 +117,34 @@ export function Prompt() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Toast notification */}
+      <Toast.Provider>
+  <AnimatePresence>
+    {open && (
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className="fixed bottom-4 right-4"
+      >
+        <Toast.Root
+          open={open}
+          onOpenChange={setOpen}
+          duration={2000}
+          className="bg-white flex items-center justify-center gap-2 text-red-600 p-2 h-10 rounded-md shadow-lg"
+        >
+          <AlertCircleIcon size={20} className="text-red-500" />
+          <Toast.Title>{toastMessage}</Toast.Title>
+          <Toast.Close />
+        </Toast.Root>
+      </motion.div>
+    )}
+  </AnimatePresence>
+  <Toast.Viewport className="fixed bottom-4 right-4 w-64 max-w-full" />
+</Toast.Provider>
+
+
     </div>
   );
 }
