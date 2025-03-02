@@ -8,17 +8,12 @@ import { usePrompts } from "@/hooks/usePrompts";
 import { useActions } from "@/hooks/useActions";
 import axios from "axios";
 import {Loader} from "@/components/Loader"
-import { use, useEffect, useState } from "react";
+import { use, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { WORKER_API_URL } from "@/config";
 
-export default function ProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
-    const [projectId, setProjectId] = useState<string >('');
-
-    useEffect(() => {
-        params.then(({ projectId }) => setProjectId(projectId));
-    }, [params]);
-   
+export default function ProjectPage({ params }: { params:Promise< { projectId: string } >}) {
+    const {projectId} = use(params)
     const { prompts } = usePrompts(projectId);
     const { actions } = useActions(projectId);
     const [prompt, setPrompt] = useState("");
@@ -69,7 +64,7 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
                             const token = await getToken();
                             await axios.post(
                                 `${WORKER_API_URL}/prompt`,
-                                { projectId, 
+                                { projectId:projectId, 
                                   prompt },
                                 { headers: { Authorization: `Bearer ${token}` } }
                             );
