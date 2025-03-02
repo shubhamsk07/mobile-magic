@@ -72,11 +72,15 @@ export function Prompt() {
   return (
     <div className="flex rounded-xl border-xl border border-white/20 bg-zinc-600/50 text-white max-sm:w-md max-sm:mx-4 ">
       <textarea
-        className="flex w-full rounded-md px-4 py-4  focus-visible:outline-none focus-visible:ring-ring resize-none text-[16px] placeholder-shown:whitespace-nowrap md:text-base focus-visible:ring-0 max-h-[200px] placeholder:text-white "
-        placeholder={placeholder}
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-      />
+  className="flex w-full rounded-md px-4 py-4 focus-visible:outline-none focus-visible:ring-ring resize-none text-[16px] placeholder-shown:whitespace-nowrap md:text-base focus-visible:ring-0 max-h-[500px] min-h-[40px] overflow-hidden placeholder:text-white"
+  placeholder={placeholder}
+  value={prompt}
+  onChange={(e) => {
+    setPrompt(e.target.value);
+    e.target.style.height = "auto"; 
+    e.target.style.height = `${e.target.scrollHeight}px`; 
+  }}
+/>
       <AnimatePresence>
         {prompt.trim() !== "" && (
           <motion.div

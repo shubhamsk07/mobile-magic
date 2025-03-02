@@ -9,7 +9,7 @@ import AnimatedComp from "@/components/AnimatedComp";
 
 export default function Home() {
   return (
-    <div className="p-4">
+    <div className="p-4 overflow-x-hidden">
       <Appbar />
     <div className=" relative mt-4 border-b-2 border-zinc-400/50 w-screen right-4" />
       <div className="flex justify-center mt-16">
