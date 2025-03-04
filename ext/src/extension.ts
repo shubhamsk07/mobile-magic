@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 
 type AdminMessage = {
-	type: "command" | "update-file" | "prompt-start"
+	type: "command" | "update-file" | "prompt-start" | "prompt-end"
 	content: string;
 	path?: string;
 };
@@ -78,13 +78,11 @@ function initWs(context: vscode.ExtensionContext) {
 		}
 
 		if (data.type === "prompt-start") {
-			// cancel the long running process on the ai terminal
-			const terminalId = context.globalState.get('aiTerminalId');
-			const terminals = vscode.window.terminals;
-			const aiTerm = terminals.find(t => t.processId === terminalId);
-			if (aiTerm) {
-				aiTerm.sendText("^C");
-			}
+			vscode.commands.executeCommand('extension.sendToAiTerminal', '\x03');
+		}
+
+		if (data.type === "prompt-end") {
+			vscode.commands.executeCommand('extension.sendToAiTerminal', "npm run web");
 		}
 	}
 
