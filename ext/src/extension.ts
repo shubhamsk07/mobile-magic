@@ -78,7 +78,7 @@ function initWs(context: vscode.ExtensionContext) {
 		}
 
 		if (data.type === "prompt-start") {
-			vscode.commands.executeCommand('extension.sendToAiTerminal', '\x03');
+			vscode.commands.executeCommand('workbench.action.terminal.interrupt');
 		}
 
 		if (data.type === "prompt-end") {
