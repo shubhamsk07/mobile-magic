@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 
 type AdminMessage = {
-	type: "command" | "update-file"
+	type: "command" | "update-file" | "prompt-start"
 	content: string;
 	path?: string;
 };
@@ -37,7 +37,7 @@ async function ensureFileExists(filePath: string, content: string = '') {
   }
   
 
-function initWs() {
+function initWs(context: vscode.ExtensionContext) {
 	// change to something else
 	const ws = new WebSocket(process.env.WS_RELAYER_URL || "ws://ws-relayer:9093");
 	
@@ -59,7 +59,6 @@ function initWs() {
 		console.log(data);
 		if (data.type === "command") {
 			vscode.commands.executeCommand('extension.sendToAiTerminal', data.content);
-			vscode.commands.executeCommand('extension.sendToAiTerminal', data.content);
 		}
 
 		if (data.type === "update-file") {
@@ -77,6 +76,16 @@ function initWs() {
 			edit.replace(document.uri, range, data.content);
 			await vscode.workspace.applyEdit(edit);
 		}
+
+		if (data.type === "prompt-start") {
+			// cancel the long running process on the ai terminal
+			const terminalId = context.globalState.get('aiTerminalId');
+			const terminals = vscode.window.terminals;
+			const aiTerm = terminals.find(t => t.processId === terminalId);
+			if (aiTerm) {
+				aiTerm.sendText("^C");
+			}
+		}
 	}
 
 	return ws;
@@ -88,9 +97,9 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "bolty-listener" is now active!');
 
 	console.log("activate extension");
-	let ws = initWs();
+	let ws = initWs(context);
 	ws.onerror = (e) => {
-		initWs();	
+		initWs(context);	
 	};
 		
 	const aiTerminal = vscode.window.createTerminal({
