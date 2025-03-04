@@ -16,6 +16,13 @@ function initWs() {
 		console.log(JSON.stringify(e));
 	}
 
+	ws.onopen = () => {
+		ws.send(JSON.stringify({
+			event: "subscribe",
+			data: null
+		}));
+	}
+
 	ws.onmessage = async (e: any) => {
 		const data: AdminMessage = JSON.parse(e.data);
 		console.log(data);
@@ -26,14 +33,14 @@ function initWs() {
 
 		if (data.type === "update-file") {
 			const document = await vscode.workspace.openTextDocument(data.path!);
-			// const editor = await vscode.window.showTextDocument(document);
+			await vscode.window.showTextDocument(document);
 			const edit = new vscode.WorkspaceEdit();
 			const range = new vscode.Range(
 				new vscode.Position(0, 0),
 				new vscode.Position(document.lineCount, 0)
 			);
 
-			edit.replace(document.uri, range, Math.random().toString());
+			edit.replace(document.uri, range, data.content);
 			await vscode.workspace.applyEdit(edit);
 		}
 	}
