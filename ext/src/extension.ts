@@ -1,10 +1,41 @@
 import { WebSocket } from 'ws';
 import * as vscode from 'vscode';
+import * as path from 'path';
+
 type AdminMessage = {
 	type: "command" | "update-file"
 	content: string;
 	path?: string;
 };
+
+async function ensureFileExists(filePath: string, content: string = '') {
+	try {
+	  const uri = vscode.Uri.file(filePath);
+	  
+	  // Check if the directory exists, create if not
+	  const dirPath = path.dirname(filePath);
+	  try {
+		await vscode.workspace.fs.stat(vscode.Uri.file(dirPath));
+	  } catch {
+		// Directory doesn't exist, create it
+		await vscode.workspace.fs.createDirectory(vscode.Uri.file(dirPath));
+	  }
+  
+	  // Check if file exists
+	  try {
+		await vscode.workspace.fs.stat(uri);
+	  } catch {
+		// File doesn't exist, create it
+		await vscode.workspace.fs.writeFile(uri, Buffer.from(content, 'utf8'));
+	  }
+  
+	  return uri;
+	} catch (error) {
+	  vscode.window.showErrorMessage(`Error ensuring file exists: ${error}`);
+	  throw error;
+	}
+  }
+  
 
 function initWs() {
 	// change to something else
@@ -32,8 +63,11 @@ function initWs() {
 		}
 
 		if (data.type === "update-file") {
-			const document = await vscode.workspace.openTextDocument(data.path!);
+			const fileUri = await ensureFileExists(data.path!, data.content);
+
+			const document = await vscode.workspace.openTextDocument(fileUri);
 			await vscode.window.showTextDocument(document);
+
 			const edit = new vscode.WorkspaceEdit();
 			const range = new vscode.Range(
 				new vscode.Position(0, 0),
