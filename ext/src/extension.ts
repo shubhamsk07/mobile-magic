@@ -78,7 +78,11 @@ function initWs(context: vscode.ExtensionContext) {
 		}
 
 		if (data.type === "prompt-start") {
-			vscode.commands.executeCommand('workbench.action.terminal.interrupt');
+			const terminals = vscode.window.terminals;
+			if (terminals.length > 0) {
+				const activeTerminal = vscode.window.activeTerminal;
+				activeTerminal?.sendText('\x03');
+			}
 		}
 
 		if (data.type === "prompt-end") {
