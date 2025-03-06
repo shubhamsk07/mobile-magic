@@ -10,17 +10,21 @@ import {
 import { Header } from '@/components/Header'
 import { motion } from 'motion/react'
 import { containerVariants, itemVariants } from '@/lib/animation-variants' 
+import { ThemeButton } from '@/components/theme-button' 
 
 export function Appbar() {
   return (
     <motion.div 
-    variants={containerVariants}
-     initial="hidden"
-     animate="visible"
-    className="flex items-center mt-4 justify-between">
+    	variants={containerVariants}
+     	initial="hidden"
+     	animate="visible"
+    	className="flex items-center mt-4 justify-between"
+    >
       <Header />
 
       <motion.div variants={itemVariants} className="flex gap-2 items-center justify-center">
+	<ThemeButton />
+
         <SignedOut>
           <SignInButton>
             <button

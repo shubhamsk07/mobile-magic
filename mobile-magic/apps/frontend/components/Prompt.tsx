@@ -74,17 +74,17 @@ export function Prompt() {
               value={prompt}
               placeholder="Write your prompt here..."
               onChange={(e) => setPrompt(e.target.value)}
-              className="w-full placeholder:text-gray-400/60 bg-transparent border-none text-md rounded-none focus-visible:ring-0 min-h-16 max-h-80 resize-none outline-none"
+              className="w-full placeholder:text-gray-400/60 bg-transparent border-none shadow-none text-md rounded-none focus-visible:ring-0 min-h-16 max-h-80 resize-none outline-none"
             />
           </div>
 
           <div className="p-2 flex items-center justify-end">
             <Button
               type="submit"
-              className="h-10 w-10 cursor-pointer rounded-full bg-teal-200/10 hover:bg-teal-300/20 flex items-center justify-center"
+              className="h-10 w-10 cursor-pointer rounded-full bg-teal-200 border dark:bg-teal-200/10 hover:bg-teal-300/20 flex items-center justify-center"
               disabled={!prompt}
             >
-              <MoveUpRight className="w-10 h-10 text-teal-300/70" />
+              <MoveUpRight className="w-10 h-10 text-teal-500 dark:text-teal-400/80" />
             </Button>
           </div>
         </motion.form>
@@ -92,7 +92,7 @@ export function Prompt() {
 
       <motion.div variants={itemVariants} className="flex flex-row flex-wrap mt-4 sm:flex-nowrap w-full gap-2 sm:gap-2 justify-center items-center">
         {prompts.map((prompt) => (
-          <div onClick={() => setPrompt(prompt.title)} key={prompt.id} className="border border-zinc-800 hover:bg-zinc-600/10 bg-zinc-900 cursor-pointer px-4 py-2 rounded-xl">
+          <div onClick={() => setPrompt(prompt.title)} key={prompt.id} className="border dark:border-zinc-800 hover:bg-zinc-600/10 dark:bg-zinc-900 cursor-pointer px-4 py-2 rounded-xl">
             <p className="text-gray-400/80 text-sm">{prompt.title}</p>
           </div>
         ))}

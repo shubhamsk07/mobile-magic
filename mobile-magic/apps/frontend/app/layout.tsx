@@ -31,7 +31,7 @@ export default function RootLayout({
 		<ClerkProvider>
 			<html lang="en" suppressHydrationWarning>
 				<body
-					className={cn(`font-sans selection:bg-teal-200/20 selection:text-teal-200 antialiased`,
+					className={cn(`font-sans selection:bg-teal-400/70 selection:text-white dark:selection:bg-teal-200/20 dark:selection:text-teal-200 antialiased`,
 						figtree.variable
 					)}
 				>

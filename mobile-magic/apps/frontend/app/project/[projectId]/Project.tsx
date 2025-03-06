@@ -64,8 +64,8 @@ export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
                               {actions.map((action) => (
                                   <div key={action.id} className="flex border-2 bg-gray-500/10 p-2 rounded-md">
 				    <div className="flex items-center gap-2">
-				      <div className="inline-block rounded-full border border-gray-300/20 p-1 h-fit">
-				        <div className="w-2 h-2 rounded-full flex-shrink-0 bg-teal-300/30" />
+				      <div className="inline-block rounded-full border dark:border-gray-300/20 p-1 h-fit">
+				        <div className="w-2 h-2 rounded-full flex-shrink-0 bg-teal-300 dark:bg-teal-300/30" />
 				      </div>
                                       <p>{action.content}</p>
 				     </div>
@@ -81,7 +81,7 @@ export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
                                     value={prompt}
                                     placeholder="Write a prompt..."
                                     onChange={(e) => setPrompt(e.target.value)}
-                                    className="w-full placeholder:text-gray-400/60 bg-transparent border-none text-md rounded-none focus-visible:ring-0 min-h-16 max-h-80 resize-none outline-none"
+                                    className="w-full placeholder:text-gray-400/60 shadow-none bg-transparent border-none text-md rounded-none focus-visible:ring-0 min-h-16 max-h-80 resize-none outline-none"
                                 />
                             </div>
                             <div className="p-2 flex items-center justify-end">
