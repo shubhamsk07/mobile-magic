@@ -56,6 +56,7 @@ function initWs(context: vscode.ExtensionContext) {
 
 	ws.onmessage = async (e: any) => {
 		const data: AdminMessage = JSON.parse(e.data);
+		console.log('data');
 		console.log(data);
 		if (data.type === "command") {
 			vscode.commands.executeCommand('extension.sendToAiTerminal', data.content);
@@ -86,7 +87,7 @@ function initWs(context: vscode.ExtensionContext) {
 		}
 
 		if (data.type === "prompt-end") {
-			vscode.commands.executeCommand('extension.sendToAiTerminal', "npm run web");
+			vscode.commands.executeCommand('extension.sendToAiTerminal', "npm run dev");
 		}
 	}
 
@@ -95,10 +96,6 @@ function initWs(context: vscode.ExtensionContext) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-
-	console.log('Congratulations, your extension "bolty-listener" is now active!');
-
-	console.log("activate extension");
 	let ws = initWs(context);
 	ws.onerror = (e) => {
 		initWs(context);	
@@ -117,7 +114,6 @@ export function activate(context: vscode.ExtensionContext) {
 	  
 	  // Pin the terminal (this requires the terminal tabs feature)
 	  vscode.commands.executeCommand('workbench.action.terminal.focus');
-	  vscode.commands.executeCommand('workbench.action.terminal.pin');
 	  
 	  // Register a command to send text to the AI terminal
 	  let sendToAiTerminal = vscode.commands.registerCommand('extension.sendToAiTerminal', async (text) => {

@@ -8,7 +8,15 @@ interface Prompt {
     content: string;
     type: "USER" | "SYSTEM";
     createdAt: Date;
+    actions: Action[];
 }
+
+interface Action {
+    id: string;
+    content: string;
+    createdAt: Date;
+}
+
 
 export function usePrompts(projectId: string) {
     const [prompts, setPrompts] = useState<Prompt[]>([]);

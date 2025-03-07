@@ -12,7 +12,7 @@ export default function Home() {
             <Appbar />
 
             <div className="max-w-2xl mx-auto pt-32">
-	      <Hero />
+    	      <Hero />
 
               <div className="pt-4">
                 <Prompt />

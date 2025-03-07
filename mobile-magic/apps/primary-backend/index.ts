@@ -9,12 +9,12 @@ app.use(express.json());
 app.use(cors());
 
 app.post("/project", authMiddleware, async (req, res) => {
-  const { prompt } = req.body;
+  const { prompt, type } = req.body;
   const userId = req.userId!;
   //TODO: add logic to get a useful name for the project from the prompt
   const description = prompt.split("\n")[0];
   const project = await prismaClient.project.create({
-    data: { description, userId },
+    data: { description, userId, type },
   });
   res.json({ projectId: project.id });
 });
@@ -33,20 +33,12 @@ app.get("/prompts/:projectId", authMiddleware, async (req, res) => {
 
   const prompts = await prismaClient.prompt.findMany({
     where: { projectId },
+    include: {
+      actions: true,
+    },
   });
   res.json({ prompts });
 });
-
-app.get("/actions/:projectId", authMiddleware, async (req, res) => {
-  const userId = req.userId!;
-  const projectId = req.params.projectId;
-
-  const actions = await prismaClient.action.findMany({
-    where: { projectId },
-  });
-  res.json({ actions });
-});
-
 
 app.listen(9090, () => {
   console.log("Server is running on port 3000");

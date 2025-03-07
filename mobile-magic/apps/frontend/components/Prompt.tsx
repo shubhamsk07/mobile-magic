@@ -27,6 +27,7 @@ export function Prompt() {
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const [prompt, setPrompt] = useState("");
+  const [type, setType] = useState<"NEXTJS" | "REACT_NATIVE">("NEXTJS");
 
   const { getToken } = useAuth();
   const router = useRouter();
@@ -46,6 +47,7 @@ export function Prompt() {
     }
     const response = await axios.post(`${BACKEND_URL}/project`, {
       prompt: prompt,
+      type: type,
     }, {
       headers: {
         "Authorization": `Bearer ${token}`
@@ -67,6 +69,14 @@ export function Prompt() {
        animate="visible"
     >
       <div className="px-4 py-2 sm:static sm:w-auto fixed bottom-0 left-0 w-full">
+        <div className="flex flex-row gap-2 mb-4">
+          <Button variant={type === "NEXTJS" ? "default" : "outline"} onClick={() => setType("NEXTJS")}>
+            NextJS
+          </Button>
+          <Button variant={type === "REACT_NATIVE" ? "default" : "outline"} onClick={() => setType("REACT_NATIVE")}>
+            React Native
+          </Button>
+        </div>
         <motion.form variants={itemVariants} onSubmit={(e) => onSubmit(e)} className="relative w-full border-2 bg-gray-500/10 focus-within:outline-1 focus-within:outline-teal-300/30 rounded-xl">
           <div className="p-2">
             <Textarea

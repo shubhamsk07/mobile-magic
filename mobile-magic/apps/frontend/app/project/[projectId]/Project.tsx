@@ -7,7 +7,6 @@ import { Header } from "@/components/Header"
 import { WORKER_URL } from "@/config";
 import { MoveUpRight, SquarePen } from "lucide-react";
 import { usePrompts } from "@/hooks/usePrompts";
-import { useActions } from "@/hooks/useActions";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { SidebarInset } from "@/components/ui/sidebar"
 import { WORKER_API_URL } from "@/config";
@@ -18,7 +17,6 @@ import axios from "axios";
 export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
     const router = useRouter()
     const { prompts } = usePrompts(projectId);
-    const { actions } = useActions(projectId);
     const [prompt, setPrompt] = useState("");
     const { getToken } = useAuth();
     const { user } = useUser()
@@ -55,22 +53,23 @@ export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
                             <div className="flex flex-col space-y-4 justify-center">
                                 {/* we are filtering only user prompts and rendering it */}
                                 {prompts.filter((prompt) => prompt.type === "USER").map((prompt) => (
-                                    <span key={prompt.id} className="flex text-lg gap-2">
-                                        <Image src={user?.imageUrl || ""} width={10} height={10} alt="Profile picture" className="rounded-full w-6 h-6" />
-                                        {prompt.content}
-                                    </span>
+                                    <div>
+                                        <span key={prompt.id} className="flex text-lg gap-2">
+                                            <Image src={user?.imageUrl || ""} width={10} height={10} alt="Profile picture" className="rounded-full w-6 h-6" />
+                                            {prompt.content}
+                                        </span>
+                                        {prompt.actions.map((action) => (
+                                            <div key={action.id} className="flex border-2 bg-gray-500/10 p-2 rounded-md">
+                                                <div className="flex items-center gap-2">
+                                                <div className="inline-block rounded-full border dark:border-gray-300/20 p-1 h-fit">
+                                                    <div className="w-2 h-2 rounded-full flex-shrink-0 bg-teal-300 dark:bg-teal-300/30" />
+                                                </div>
+                                                <p>{action.content}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ))}
-
-                              {actions.map((action) => (
-                                  <div key={action.id} className="flex border-2 bg-gray-500/10 p-2 rounded-md">
-				    <div className="flex items-center gap-2">
-				      <div className="inline-block rounded-full border dark:border-gray-300/20 p-1 h-fit">
-				        <div className="w-2 h-2 rounded-full flex-shrink-0 bg-teal-300 dark:bg-teal-300/30" />
-				      </div>
-                                      <p>{action.content}</p>
-				     </div>
-                                  </div>
-                              ))}
                             </div>
                         </div>
                     </div>

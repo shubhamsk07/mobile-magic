@@ -1,17 +1,19 @@
 import { prismaClient } from "db/client";
 
-const BASE_WORKER_DIR = "/tmp/bolty-worker";
-
-if (!Bun.file(BASE_WORKER_DIR).exists()) {
-    Bun.write(BASE_WORKER_DIR, "");
+function getBaseWorkerDir(type: "NEXTJS" | "REACT_NATIVE") {
+    if (type === "NEXTJS") {
+        return "/tmp/next-app";
+    }
+    return "/tmp/mobile-app";
 }
 
 const ws = new WebSocket(process.env.WS_RELAYER_URL || "ws://ws-relayer:9093");
 
-export async function onFileUpdate(filePath: string, fileContent: string, projectId: string) {
+export async function onFileUpdate(filePath: string, fileContent: string, projectId: string, promptId: string, type: "NEXTJS" | "REACT_NATIVE") {
     await prismaClient.action.create({
         data: {
             projectId,
+            promptId,
             content: `Updated file ${filePath}`
         },
     });
@@ -21,18 +23,16 @@ export async function onFileUpdate(filePath: string, fileContent: string, projec
         data: {
             type: "update-file",
             content: fileContent,
-            path: `${BASE_WORKER_DIR}/${filePath}`
+            path: `${getBaseWorkerDir(type)}/${filePath}`
         }
     }))
 }
 
-export async function onShellCommand(shellCommand: string, projectId: string) {
+export async function onShellCommand(shellCommand: string, projectId: string, promptId: string) {
     //npm run build && npm run start
     const commands = shellCommand.split("&&");
     for (const command of commands) {
         console.log(`Running command: ${command}`);
-        console.log(BASE_WORKER_DIR);
-        // const result = Bun.spawnSync({cmd: command.split(" "), cwd: BASE_WORKER_DIR});
 
         ws.send(JSON.stringify({
             event: "admin",
@@ -45,22 +45,24 @@ export async function onShellCommand(shellCommand: string, projectId: string) {
         await prismaClient.action.create({
             data: {
                 projectId,
+                promptId,
                 content: `Ran command: ${command}`,
             },
         });
     }
 }
 
-export function onPromptStart() {
+export function onPromptStart(promptId: string) {
     ws.send(JSON.stringify({
         event: "admin",
         data: {
             type: "prompt-start"
         }
     }))
+
 }
 
-export function onPromptEnd() {
+export function onPromptEnd(promptId: string) {
     ws.send(JSON.stringify({
         event: "admin",
         data: {

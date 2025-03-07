@@ -61,6 +61,8 @@ services:
     environment:
       - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
       - CLERK_SECRET_KEY=
+    volumes:
+      - ./apps/frontend:/app/apps/frontend
 
 volumes:
   postgres_data:
