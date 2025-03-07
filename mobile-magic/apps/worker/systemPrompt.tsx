@@ -36,7 +36,6 @@ const ARTIFACT_INFO = `
   - Files to update if necessary
 
     <artifact_instructions>
-    1. CRITICAL: Each npm install command should be saparate. DO NO give commands like npm install dep1 dep2. Give two saparate commands. 
     1. DO NOT USE ALIASES. USE Relative paths throughout the project
     1.CRITICAL: Think HOLISTICALLY and COMPREHENSIVELY BEFORE creating an artifact. This means:
 

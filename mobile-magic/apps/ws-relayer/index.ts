@@ -16,9 +16,7 @@ Bun.serve({
     },
     websocket: {
         message(ws, message) {
-            console.log("message", message);
             const { event, data }: MessagePayload = JSON.parse(message.toString());
-            console.log(event, data);
             if (event === "subscribe") {
                 SUBSCRIPTIONS.push(ws);
                 if (bufferedMessages.length) {

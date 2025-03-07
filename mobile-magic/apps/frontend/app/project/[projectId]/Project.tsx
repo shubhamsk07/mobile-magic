@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Header } from "@/components/Header"
-import { WORKER_URL } from "@/config";
+import { FRONTEND_URL, WORKER_URL } from "@/config";
 import { MoveUpRight, SquarePen } from "lucide-react";
 import { usePrompts } from "@/hooks/usePrompts";
 import { useAuth, useUser } from "@clerk/nextjs";
@@ -20,6 +20,7 @@ export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
     const [prompt, setPrompt] = useState("");
     const { getToken } = useAuth();
     const { user } = useUser()
+    const [tab, setTab] = useState("code");
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -96,11 +97,27 @@ export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
                     </div>
                 </div>
                 <div className="flex-1 min-w-0 overflow-hidden p-4">
-                    <iframe
-                        src={`${WORKER_URL}/`}
-                        className="w-full h-full rounded-lg"
-                        title="Project Worker"
-                    />
+                    <div className="flex items-center justify-end gap-2 pb-2">
+                        <Button variant={tab === "code" ? "default" : "outline"} onClick={() => setTab("code")}>Code</Button>
+                        <Button variant={tab === "preview" ? "default" : "outline"} onClick={() => setTab("preview")}>Preview</Button>
+                        <Button variant="outline" onClick={() => setTab("split")}>Split</Button>
+                    </div>
+                        <div className="flex gap-2 h-full">
+                            <div className={`${tab === "code" ? "left-0 flex-1" : tab === "split" ? "left-0 flex-1" : "left-full flex-0"} position-absolute transition-all duration-300 h-full w-full`}>
+                                <iframe
+                                    src={`${WORKER_URL}/`}
+                                    className="w-full h-full rounded-lg"
+                                    title="Project Worker"
+                                />
+                            </div>
+                            <div className={`${tab === "preview" ? "left-0 flex-1" : tab === "split" ? "left-0 flex-1" : "left-full flex-0"} position-absolute transition-all duration-300 h-full w-full`}>
+                                <iframe
+                                    src={`${FRONTEND_URL}/`}
+                                    className="w-full h-full rounded-lg"
+                                    title="Project Worker"
+                                />
+                            </div>
+                        </div>
                 </div>
             </div>
         </SidebarInset>

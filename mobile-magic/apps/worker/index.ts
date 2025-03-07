@@ -72,6 +72,7 @@ app.post("/prompt", async (req, res) => {
       data: {
         content: "Done!",
         projectId,
+        promptId: promptDb.id,
       },
     });
     onPromptEnd(promptDb.id);
