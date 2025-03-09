@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caddy-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: caddy-gateway
+  template:
+    metadata:
+      labels:
+        app: caddy-gateway
+    spec:
+      containers:
+        - name: caddy
+          image: caddy:latest
+          command: ["caddy"]
+          args: ["run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+          ports:
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          volumeMounts:
+            - name: caddy-config
+              mountPath: /etc/caddy/
+            - name: wildcard-certs
+              mountPath: /etc/certs/
+              readOnly: true
+      volumes:
+        - name: caddy-config
+          configMap:
+            name: caddy-config
+            items:
+              - key: Caddyfile
+                path: Caddyfile
+        - name: wildcard-certs
+          secret:
+            secretName: wildcard-100xdevs-com-tls
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: caddy-gateway
+spec:
+  type: LoadBalancer
+  selector:
+    app: caddy-gateway
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443

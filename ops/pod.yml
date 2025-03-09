@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: first
+  labels:
+    app: first
+spec:
+  containers:
+    - name: first
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: session-first
+spec:
+  selector:
+    app: first
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

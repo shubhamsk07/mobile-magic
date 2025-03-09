@@ -1,0 +1,20 @@
+
+
+{
+    # Global options
+}
+
+https://*.cloud.100xdevs.com:443 {
+    tls /etc/certs/tls.crt /etc/certs/tls.key
+
+    # Match subdomains of the form session-xxxx.cloud.100xdevs.com
+    @session host *.cloud.100xdevs.com
+    handle @session {
+        reverse_proxy {http.request.host.labels.3}.user-apps.svc.cluster.local:8080
+    }
+
+    # Fallback: return 404 if nothing else matches
+    handle {
+        respond "Not Found" 404
+    }
+}
