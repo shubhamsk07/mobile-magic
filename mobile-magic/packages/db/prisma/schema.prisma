@@ -34,6 +34,7 @@ model Project {
 enum ProjectType {
   REACT_NATIVE
   NEXTJS
+  REACT
 }
 
 model Prompt {

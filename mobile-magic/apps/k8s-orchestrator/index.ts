@@ -7,9 +7,16 @@ import cors from 'cors';
 import { addNewPod, addProjectToPod, redisClient, removePod } from './redis';
 import { getAllPods } from './redis';
 import { DOMAIN } from './config';
+import { prismaClient } from "db/client";
 
 const kc = new KubeConfig();
 const app = express();
+
+const PROJECT_TYPE_TO_BASE_FOLDER = {
+    NEXTJS: "/tmp/next-app",
+    REACT: "/tmp/react-app",
+    REACT_NATIVE: "/tmp/mobile-app"
+}
 
 const POD_EXPIRY = 1000 * 60 * 5; // 5 minutes
 const EMPTY_POD_BUFFER_SIZE = 3;
@@ -27,7 +34,7 @@ async function listPods(): Promise<string[]> {
     return res.items.filter(pod => pod.status?.phase === 'Running' || pod.status?.phase === 'Pending').filter(pod => pod.metadata?.name).map((pod) => pod.metadata?.name as string);
 }
 
-async function createPod() {
+async function createPod(projectType: "NEXTJS" | "REACT_NATIVE") {
     const name = getRandomName();
 
     await k8sApi.createNamespacedPod({ namespace: 'user-apps', body: {
@@ -38,8 +45,14 @@ async function createPod() {
             },
         },
         spec: {
+            initContainers: [{
+                name: 'init',
+                image: '100xdevs/code-server-base:latest',
+                command: ["/bin/sh", "-c"],
+                args: [`cp -r ${PROJECT_TYPE_TO_BASE_FOLDER[projectType]} /app`]
+            }],
             containers: [{
-                name, 
+                name,
                 image: '100xdevs/code-server-base:latest',
                 ports: [{ containerPort: 8080 }, { containerPort: 8081 }],
             }],
@@ -71,12 +84,12 @@ async function createPod() {
     }});
 }
 
-async function assignPodToProject(projectId: string) {
+async function assignPodToProject(projectId: string, projectType: "NEXTJS" | "REACT_NATIVE") {
     const pods = await getAllPods();
     const pod = Object.keys(pods).find((pod) => pods[pod] === "empty");
     if (!pod) {
-        await createPod();
-        return assignPodToProject(projectId);
+        await createPod(projectType);
+        return assignPodToProject(projectId, projectType);
     }
     addProjectToPod(projectId, pod);
     console.log(`Assigned project ${projectId} to pod ${pod}`);
@@ -85,7 +98,17 @@ async function assignPodToProject(projectId: string) {
 
 app.get("/worker/:projectId", async (req, res) => {
     const { projectId } = req.params;
-    const pod = await assignPodToProject(projectId);
+    const project = await prismaClient.project.findUnique({
+        where: {
+            id: projectId,
+        },
+    });
+
+    if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+    }
+
+    const pod = await assignPodToProject(projectId, project.type);
 
     res.json({ workerUrl: `https://session-${pod}.${DOMAIN}`, previewUrl: `https://preview-${pod}.${DOMAIN}` });
 });

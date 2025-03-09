@@ -1,6 +1,6 @@
 import fs from "fs"
 import path from "path"
-const FOLDER_PATH = "/Users/harkiratsingh/Projects/mobile-magic-parent/nextjs-base-app"
+const FOLDER_PATH = "/Users/harkiratsingh/Projects/mobile-magic-parent/base-react-app"
 // read through all the files in the folder and print them in tbe bolt artifact format
 // It shoudl happen recursively
 
@@ -14,7 +14,7 @@ function serializeFolder(folderPath: string) {
         if (fs.statSync(filePath).isDirectory()) {
             serializeFolder(filePath)
         } else {
-            if (file.endsWith(".ico") || file.endsWith(".ttf") || file.endsWith(".png") || file.endsWith(".jpg") || file.endsWith(".jpeg") || file.endsWith(".gif") || file.endsWith(".svg") || file.endsWith(".webp")) {
+            if (file.endsWith("package-lock.json") || file.endsWith(".ico") || file.endsWith(".ttf") || file.endsWith(".png") || file.endsWith(".jpg") || file.endsWith(".jpeg") || file.endsWith(".gif") || file.endsWith(".svg") || file.endsWith(".webp")) {
                 return;
             }
 
