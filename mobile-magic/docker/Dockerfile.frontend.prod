@@ -1,6 +1,8 @@
 FROM oven/bun:latest
 
 WORKDIR /app
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
 
 COPY ./apps/frontend/ ./apps/frontend
 COPY ./packages/ ./packages

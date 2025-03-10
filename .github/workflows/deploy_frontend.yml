@@ -16,7 +16,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Build and push code-server
         uses: docker/build-push-action@v5
         with:
@@ -24,6 +23,5 @@ jobs:
           file: ./mobile-magic/docker/Dockerfile.frontend.prod
           push: true
           tags: 100xdevs/antidevs-frontend:${{ github.sha }}
-          env:
-            - name: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-              value: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+          build-args: |
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
