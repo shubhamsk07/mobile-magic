@@ -20,6 +20,9 @@ RUN cp -r /tmp/bolty-worker/react-base-app /tmp/react-app
 RUN cd /tmp/mobile-app && npm install
 RUN cd /tmp/next-app && npm install
 RUN cd /tmp
+WORKDIR /app
+
+WORKDIR /tmp
 
 RUN wget https://github.com/code100x/mobile-magic/raw/refs/heads/main/ext/bolty-listener-0.0.1.vsix
 RUN code-server --install-extension bolty-listener-0.0.1.vsix
@@ -28,6 +31,7 @@ RUN sudo chown -R coder /tmp/bolty-worker
 RUN sudo chown -R coder /tmp/mobile-app
 RUN sudo chown -R coder /tmp/next-app
 RUN sudo chown -R coder /tmp/react-app
+RUN sudo chown -R coder /app
 
 RUN rm -rf /tmp/bolty-worker
 

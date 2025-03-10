@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { BACKEND_URL, WORKER_API_URL } from "@/config";
+import { BACKEND_URL } from "@/config";
 import { useRouter } from "next/navigation";
 import { Textarea } from "./ui/textarea";
 import { useAuth } from "@clerk/nextjs";
@@ -27,7 +27,7 @@ export function Prompt() {
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const [prompt, setPrompt] = useState("");
-  const [type, setType] = useState<"NEXTJS" | "REACT_NATIVE">("NEXTJS");
+  const [type, setType] = useState<"NEXTJS" | "REACT_NATIVE" | "REACT">("NEXTJS");
 
   const { getToken } = useAuth();
   const router = useRouter();
@@ -53,13 +53,8 @@ export function Prompt() {
         "Authorization": `Bearer ${token}`
       }
     })
-    // You should get the worker url here.
-    await axios.post(`${WORKER_API_URL}/prompt`, {
-      projectId: response.data.projectId,
-      prompt: prompt,
-    });
 
-    router.push(`/project/${response.data.projectId}`);
+    router.push(`/project/${response.data.projectId}?initPrompt=${prompt}`);
   }
 
   return (
@@ -70,6 +65,9 @@ export function Prompt() {
     >
       <div className="px-4 py-2 sm:static sm:w-auto fixed bottom-0 left-0 w-full">
         <div className="flex flex-row gap-2 mb-4">
+          <Button variant={type === "REACT" ? "default" : "outline"} onClick={() => setType("REACT")}>
+            React
+          </Button>
           <Button variant={type === "NEXTJS" ? "default" : "outline"} onClick={() => setType("NEXTJS")}>
             NextJS
           </Button>

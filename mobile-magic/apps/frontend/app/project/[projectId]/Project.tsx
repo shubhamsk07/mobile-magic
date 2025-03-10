@@ -1,32 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Header } from "@/components/Header"
-import { FRONTEND_URL, WORKER_URL } from "@/config";
 import { MoveUpRight, SquarePen } from "lucide-react";
 import { usePrompts } from "@/hooks/usePrompts";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { SidebarInset } from "@/components/ui/sidebar"
-import { WORKER_API_URL } from "@/config";
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image";
 import axios from "axios";
 
-export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
+export const Project: React.FC<{ projectId: string, sessionUrl: string, previewUrl: string, workerUrl: string }> = ({projectId, sessionUrl, previewUrl, workerUrl }) => {
+    const searchParams = useSearchParams()
+ 	const initPrompt = searchParams.get('initPrompt');
+
     const router = useRouter()
     const { prompts } = usePrompts(projectId);
-    const [prompt, setPrompt] = useState("");
+    const prompt = useRef(initPrompt || "");
     const { getToken } = useAuth();
     const { user } = useUser()
     const [tab, setTab] = useState("code");
 
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const onSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const token = await getToken();
         axios.post(
-            `${WORKER_API_URL}/prompt`,
+            `${workerUrl}/prompt`,
             {
                 projectId: projectId,
                 prompt: prompt,
@@ -37,8 +38,15 @@ export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
                 },
             },
         );
-        setPrompt("");
-    }
+        prompt.current = "";
+    }, [projectId, workerUrl, getToken]);
+
+    useEffect(() => {
+        if (initPrompt) {
+            prompt.current = initPrompt;
+            onSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>);
+        }
+    }, [onSubmit, initPrompt]);
 
     return (
         <SidebarInset className="bg-transparent">
@@ -54,7 +62,7 @@ export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
                             <div className="flex flex-col space-y-4 justify-center">
                                 {/* we are filtering only user prompts and rendering it */}
                                 {prompts.filter((prompt) => prompt.type === "USER").map((prompt) => (
-                                    <div>
+                                    <div key={prompt.id}>
                                         <span key={prompt.id} className="flex text-lg gap-2">
                                             <Image src={user?.imageUrl || ""} width={10} height={10} alt="Profile picture" className="rounded-full w-6 h-6" />
                                             {prompt.content}
@@ -78,9 +86,9 @@ export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
                         <form onSubmit={(e) => onSubmit(e)} className="relative w-full border-2 bg-gray-500/10 focus-within:outline-1 focus-within:outline-teal-300/30 rounded-xl">
                             <div className="p-2">
                                 <Textarea
-                                    value={prompt}
+                                    value={prompt.current}
                                     placeholder="Write a prompt..."
-                                    onChange={(e) => setPrompt(e.target.value)}
+                                    onChange={(e) => prompt.current = e.target.value}
                                     className="w-full placeholder:text-gray-400/60 shadow-none bg-transparent border-none text-md rounded-none focus-visible:ring-0 min-h-16 max-h-80 resize-none outline-none"
                                 />
                             </div>
@@ -88,7 +96,7 @@ export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
                                 <Button
                                     type="submit"
                                     className="h-10 w-10 cursor-pointer rounded-full bg-teal-200/10 hover:bg-teal-300/20 flex items-center justify-center"
-                                    disabled={!prompt}
+                                    disabled={!prompt.current}
                                 >
                                     <MoveUpRight className="w-10 h-10 text-teal-300/70" />
                                 </Button>
@@ -105,14 +113,14 @@ export const Project: React.FC<{ projectId: string }> = ({ projectId }) => {
                         <div className="flex gap-2 h-full">
                             <div className={`${tab === "code" ? "left-0 flex-1" : tab === "split" ? "left-0 flex-1" : "left-full flex-0"} position-absolute transition-all duration-300 h-full w-full`}>
                                 <iframe
-                                    src={`${WORKER_URL}/`}
+                                    src={`${sessionUrl}/`}
                                     className="w-full h-full rounded-lg"
                                     title="Project Worker"
                                 />
                             </div>
                             <div className={`${tab === "preview" ? "left-0 flex-1" : tab === "split" ? "left-0 flex-1" : "left-full flex-0"} position-absolute transition-all duration-300 h-full w-full`}>
                                 <iframe
-                                    src={`${FRONTEND_URL}/`}
+                                    src={`${previewUrl}/`}
                                     className="w-full h-full rounded-lg"
                                     title="Project Worker"
                                 />

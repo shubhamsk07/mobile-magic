@@ -4,6 +4,7 @@ import { KubeConfig, CoreV1Api } from "@kubernetes/client-node";
 import * as k8s from "@kubernetes/client-node";
 import { getRandomName } from "./names";
 import cors from 'cors';
+import { Writable } from 'stream';
 import { addNewPod, addProjectToPod, redisClient, removePod } from './redis';
 import { getAllPods } from './redis';
 import { DOMAIN } from './config';
@@ -34,7 +35,7 @@ async function listPods(): Promise<string[]> {
     return res.items.filter(pod => pod.status?.phase === 'Running' || pod.status?.phase === 'Pending').filter(pod => pod.metadata?.name).map((pod) => pod.metadata?.name as string);
 }
 
-async function createPod(projectType: "NEXTJS" | "REACT_NATIVE") {
+async function createPod() {
     const name = getRandomName();
 
     await k8sApi.createNamespacedPod({ namespace: 'user-apps', body: {
@@ -45,16 +46,30 @@ async function createPod(projectType: "NEXTJS" | "REACT_NATIVE") {
             },
         },
         spec: {
-            initContainers: [{
-                name: 'init',
-                image: '100xdevs/code-server-base:latest',
-                command: ["/bin/sh", "-c"],
-                args: [`cp -r ${PROJECT_TYPE_TO_BASE_FOLDER[projectType]} /app`]
-            }],
             containers: [{
-                name,
-                image: '100xdevs/code-server-base:latest',
+                name: "code-server",
+                image: '100xdevs/code-server-base:v2',
                 ports: [{ containerPort: 8080 }, { containerPort: 8081 }],
+            }, {
+                name: "ws-relayer",
+                image: "100xdevs/ws-relayer:latest",
+                ports: [{ containerPort: 9093 }],
+            }, {
+                name: "worker",
+                image: "100xdevs/worker:latest",
+                ports: [{ containerPort: 9091 }],
+                env: [{
+                    name: "WS_RELAYER_URL",
+                    value: `ws://localhost:9091`,
+                }, {
+                    name: "ANTHROPIC_API_KEY",
+                    valueFrom: {
+                        secretKeyRef: {
+                            name: "worker-secret",
+                            key: "ANTHROPIC_API_KEY",
+                        }
+                    }
+                }]
             }],
         },
     }});
@@ -82,15 +97,59 @@ async function createPod(projectType: "NEXTJS" | "REACT_NATIVE") {
             ports: [{ port: 8080, targetPort: 8081, protocol: 'TCP', name: 'preview' }],
         },
     }});
+
+    await k8sApi.createNamespacedService({ namespace: 'user-apps', body: {
+        metadata: {
+            name: `worker-${name}`,
+        },
+        spec: {
+            selector: {
+                app: name,
+            },
+            ports: [{ port: 8080, targetPort: 9091, protocol: 'TCP', name: 'preview' }],
+        },
+    }});
 }
 
-async function assignPodToProject(projectId: string, projectType: "NEXTJS" | "REACT_NATIVE") {
+async function assignPodToProject(projectId: string, projectType: "NEXTJS" | "REACT_NATIVE" | "REACT") {
     const pods = await getAllPods();
-    const pod = Object.keys(pods).find((pod) => pods[pod] === "empty");
+    const pod = Object.keys(pods).find((pod) =>  pods[pod] === "empty");
     if (!pod) {
-        await createPod(projectType);
+        await createPod();
         return assignPodToProject(projectId, projectType);
     }
+
+    const exec = new k8s.Exec(kc);
+    console.log(pod);
+    let stdout = "";
+    let stderr = "";
+    console.log("executing")
+    exec.exec("user-apps", pod, "code-server", ["/bin/sh", "-c", `mv ${PROJECT_TYPE_TO_BASE_FOLDER[projectType]}/* /app`], 
+        new Writable({
+            write: (chunk: Buffer, encoding: BufferEncoding, callback: () => void) => {
+                stdout += chunk;
+                callback();
+            }
+        }), 
+        new Writable({
+            write: (chunk: Buffer, encoding: BufferEncoding, callback: () => void) => {
+                stderr += chunk;
+                callback();
+            }
+        }), 
+        null, 
+        false, 
+        (status) => {
+            console.log(status);
+            console.log(stdout);
+            console.log(stderr);
+        }
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log(stdout);
+    console.log(stderr);
+
     addProjectToPod(projectId, pod);
     console.log(`Assigned project ${projectId} to pod ${pod}`);
     return pod;
@@ -105,12 +164,17 @@ app.get("/worker/:projectId", async (req, res) => {
     });
 
     if (!project) {
-        return res.status(404).json({ error: "Project not found" });
+        res.status(404).json({ error: "Project not found" });
+        return;
     }
 
-    const pod = await assignPodToProject(projectId, project.type);
+    const pod = await assignPodToProject(projectId, "REACT"); // project.type);
 
-    res.json({ workerUrl: `https://session-${pod}.${DOMAIN}`, previewUrl: `https://preview-${pod}.${DOMAIN}` });
+    res.json({ 
+        sessionUrl: `https://session-${pod}.${DOMAIN}`, 
+        previewUrl: `https://preview-${pod}.${DOMAIN}`, 
+        workerUrl: `http://worker-${pod}.${DOMAIN}` 
+    });
 });
 
 app.listen(7001, () => {

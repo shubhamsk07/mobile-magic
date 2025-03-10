@@ -1,6 +1,5 @@
 
-export const BACKEND_URL = "http://localhost:9090";
+export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:9090";
 // TODO: This should come from the router when we add it eventually
-export const WORKER_URL = "http://localhost:8080";
-export const FRONTEND_URL = "http://localhost:8081";
-export const WORKER_API_URL = "http://localhost:9091";
+
+export const K8S_ORCHESTRATOR_URL = process.env.NEXT_PUBLIC_K8S_ORCHESTRATOR_URL || "http://localhost:7001";

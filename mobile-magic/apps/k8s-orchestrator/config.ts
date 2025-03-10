@@ -1,2 +1,2 @@
 
-export const DOMAIN = "cloud.100xdevs.com";
+export const DOMAIN = "cloud.antidevs.com";

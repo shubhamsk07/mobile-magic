@@ -23,3 +23,4 @@ export async function addProjectToPod(projectId: string, pod: string) {
     await redisClient.hSet("POD_MAPPING", pod, projectId);
     await redisClient.expire("POD_MAPPING", 300); // expire after 5 minutes
 }
+
