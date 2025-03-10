@@ -4,7 +4,8 @@ import { prismaClient } from "db/client";
 import Anthropic from '@anthropic-ai/sdk';
 import { systemPrompt } from "./systemPrompt";
 import { ArtifactProcessor } from "./parser";
-import { onFileUpdate, onPromptEnd, onPromptStart, onShellCommand } from "./os";
+import { onFileUpdate, onPromptEnd, onShellCommand } from "./os";
+import { RelayWebsocket } from "./ws";
 
 const app = express();
 app.use(cors());
@@ -32,6 +33,23 @@ app.post("/prompt", async (req, res) => {
     },
   });
 
+  const { diff } = await RelayWebsocket.getInstance().sendAndAwaitResponse({
+    event: "admin",
+    data: {
+      type: "prompt-start",
+    }
+  }, promptDb.id);
+
+  if (diff) {
+    await prismaClient.prompt.create({
+      data: {
+        content: `<bolt-user-diff>${diff}</bolt-user-diff>\n\n$`,
+        projectId,
+        type: "USER",
+      },
+    });
+  }
+
   const allPrompts = await prismaClient.prompt.findMany({
     where: {
       projectId,
@@ -44,7 +62,6 @@ app.post("/prompt", async (req, res) => {
   let artifactProcessor = new ArtifactProcessor("", (filePath, fileContent) => onFileUpdate(filePath, fileContent, projectId, promptDb.id, project.type), (shellCommand) => onShellCommand(shellCommand, projectId, promptDb.id));
   let artifact = "";
 
-  onPromptStart(promptDb.id);
   let response = client.messages.stream({
     messages: allPrompts.map((p: any) => ({
       role: p.type === "USER" ? "user" : "assistant",

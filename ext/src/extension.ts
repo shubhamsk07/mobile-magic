@@ -6,7 +6,13 @@ type AdminMessage = {
 	type: "command" | "update-file" | "prompt-start" | "prompt-end"
 	content: string;
 	path?: string;
+	callbackId?: string;
 };
+
+type VscodeMessagePayload = {
+    event: "vscode_diff";
+    diff: string;
+}
 
 async function ensureFileExists(filePath: string, content: string = '') {
 	try {
@@ -84,9 +90,17 @@ function initWs(context: vscode.ExtensionContext) {
 				const activeTerminal = vscode.window.activeTerminal;
 				activeTerminal?.sendText('\x03');
 			}
+			// get response from git diff command silently and forward it via ws to the server
+			const diff = await vscode.commands.executeCommand('git diff');
+			ws.send(JSON.stringify({
+				event: "vscode_diff",
+				diff: diff,
+				callbackId: data.callbackId
+			}));
 		}
 
 		if (data.type === "prompt-end") {
+			vscode.commands.executeCommand('git add .');
 			vscode.commands.executeCommand('extension.sendToAiTerminal', "npm run dev");
 		}
 	}

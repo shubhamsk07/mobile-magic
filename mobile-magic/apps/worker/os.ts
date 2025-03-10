@@ -1,4 +1,5 @@
 import { prismaClient } from "db/client";
+import { RelayWebsocket } from "./ws";
 
 function getBaseWorkerDir(type: "NEXTJS" | "REACT_NATIVE") {
     if (type === "NEXTJS") {
@@ -7,7 +8,6 @@ function getBaseWorkerDir(type: "NEXTJS" | "REACT_NATIVE") {
     return "/tmp/mobile-app";
 }
 
-const ws = new WebSocket(process.env.WS_RELAYER_URL || "ws://ws-relayer:9093");
 
 export async function onFileUpdate(filePath: string, fileContent: string, projectId: string, promptId: string, type: "NEXTJS" | "REACT_NATIVE") {
     await prismaClient.action.create({
@@ -18,7 +18,7 @@ export async function onFileUpdate(filePath: string, fileContent: string, projec
         },
     });
 
-    ws.send(JSON.stringify({
+    RelayWebsocket.getInstance().send(JSON.stringify({
         event: "admin",
         data: {
             type: "update-file",
@@ -52,15 +52,6 @@ export async function onShellCommand(shellCommand: string, projectId: string, pr
     }
 }
 
-export function onPromptStart(promptId: string) {
-    ws.send(JSON.stringify({
-        event: "admin",
-        data: {
-            type: "prompt-start"
-        }
-    }))
-
-}
 
 export function onPromptEnd(promptId: string) {
     ws.send(JSON.stringify({

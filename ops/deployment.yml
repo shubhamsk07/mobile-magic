@@ -27,6 +27,9 @@ spec:
             - name: wildcard-certs
               mountPath: /etc/certs/
               readOnly: true
+            - name: wildcard-root-antidevs-com-tls
+              mountPath: /etc/root-certs/
+              readOnly: true
       volumes:
         - name: caddy-config
           configMap:
@@ -37,7 +40,9 @@ spec:
         - name: wildcard-certs
           secret:
             secretName: wildcard-100xdevs-com-tls
-
+        - name: wildcard-root-antidevs-com-tls
+          secret:
+            secretName: wildcard-root-antidevs-com-tls
 ---
 apiVersion: v1
 kind: Service

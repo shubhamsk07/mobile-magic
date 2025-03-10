@@ -120,10 +120,9 @@ async function assignPodToProject(projectId: string, projectType: "NEXTJS" | "RE
     }
 
     const exec = new k8s.Exec(kc);
-    console.log(pod);
     let stdout = "";
     let stderr = "";
-    console.log("executing")
+    console.log(`mv ${PROJECT_TYPE_TO_BASE_FOLDER[projectType]}/* /app`);
     exec.exec("user-apps", pod, "code-server", ["/bin/sh", "-c", `mv ${PROJECT_TYPE_TO_BASE_FOLDER[projectType]}/* /app`], 
         new Writable({
             write: (chunk: Buffer, encoding: BufferEncoding, callback: () => void) => {
@@ -137,7 +136,7 @@ async function assignPodToProject(projectId: string, projectType: "NEXTJS" | "RE
                 callback();
             }
         }), 
-        null, 
+        null,
         false, 
         (status) => {
             console.log(status);
@@ -173,7 +172,7 @@ app.get("/worker/:projectId", async (req, res) => {
     res.json({ 
         sessionUrl: `https://session-${pod}.${DOMAIN}`, 
         previewUrl: `https://preview-${pod}.${DOMAIN}`, 
-        workerUrl: `http://worker-${pod}.${DOMAIN}` 
+        workerUrl: `https://worker-${pod}.${DOMAIN}` 
     });
 });
 

@@ -3,7 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "exports": {
-    "./middleware": "./middleware.ts"
+    "./middleware": "./middleware.ts",
+    "./types": "./types.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
