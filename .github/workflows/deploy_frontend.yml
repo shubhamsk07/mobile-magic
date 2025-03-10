@@ -24,3 +24,6 @@ jobs:
           file: ./mobile-magic/docker/Dockerfile.frontend.prod
           push: true
           tags: 100xdevs/antidevs-frontend:${{ github.sha }}
+          env:
+            - name: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+              value: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
