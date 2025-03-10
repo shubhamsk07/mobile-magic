@@ -48,15 +48,15 @@ async function createPod() {
         spec: {
             containers: [{
                 name: "code-server",
-                image: '100xdevs/code-server-base:v2',
+                image: '100xdevs/code-server-base:v3',
                 ports: [{ containerPort: 8080 }, { containerPort: 8081 }],
             }, {
                 name: "ws-relayer",
-                image: "100xdevs/ws-relayer:latest",
+                image: "100xdevs/antidevs-ws-relayer:ff488d08f7a2bf15c77d9787352a79468c14fc3f",
                 ports: [{ containerPort: 9093 }],
             }, {
                 name: "worker",
-                image: "100xdevs/worker:latest",
+                image: "100xdevs/antidevs-worker:ff488d08f7a2bf15c77d9787352a79468c14fc3f",
                 ports: [{ containerPort: 9091 }],
                 env: [{
                     name: "WS_RELAYER_URL",
