@@ -21,6 +21,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./mobile-magic
-          file: ./mobile-magic/docker/code-server.Dockerfile
+          file: ./mobile-magic/docker/Dockerfile.frontend.prod
           push: true
           tags: 100xdevs/antidevs-frontend:${{ github.sha }}
