@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Header } from "@/components/Header"
@@ -8,17 +8,15 @@ import { MoveUpRight, SquarePen } from "lucide-react";
 import { usePrompts } from "@/hooks/usePrompts";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { SidebarInset } from "@/components/ui/sidebar"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Image from "next/image";
 import axios from "axios";
+import { PreviewIframe } from "@/components/PreviewIframe";
 
 export const Project: React.FC<{ projectId: string, sessionUrl: string, previewUrl: string, workerUrl: string }> = ({projectId, sessionUrl, previewUrl, workerUrl }) => {
-    const searchParams = useSearchParams()
- 	const initPrompt = searchParams.get('initPrompt');
-
     const router = useRouter()
     const { prompts } = usePrompts(projectId);
-    const prompt = useRef(initPrompt || "");
+    const [prompt, setPrompt] = useState("");
     const { getToken } = useAuth();
     const { user } = useUser()
     const [tab, setTab] = useState("code");
@@ -38,22 +36,15 @@ export const Project: React.FC<{ projectId: string, sessionUrl: string, previewU
                 },
             },
         );
-        prompt.current = "";
-    }, [projectId, workerUrl, getToken]);
-
-    useEffect(() => {
-        if (initPrompt) {
-            prompt.current = initPrompt;
-            onSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>);
-        }
-    }, [onSubmit, initPrompt]);
+        setPrompt("");
+    }, [projectId, workerUrl, getToken, prompt]);
 
     return (
         <SidebarInset className="bg-transparent">
             <div className="grid h-screen w-full grid-cols-1 md:grid-cols-[auto_1fr]">
                 <div className="flex flex-col justify-between p-4 gap-2 rounded-md w-full xl:w-[400px] 2xl:w-[500px] max-w-full overflow-hidden">
 		    <div className="flex items-center justify-start">
-                       <Header onClick={() => router.push("/")}>
+                <Header onClick={() => router.push("/")}>
 			 <SquarePen />	
 		       </Header>
 		    </div>
@@ -86,9 +77,9 @@ export const Project: React.FC<{ projectId: string, sessionUrl: string, previewU
                         <form onSubmit={(e) => onSubmit(e)} className="relative w-full border-2 bg-gray-500/10 focus-within:outline-1 focus-within:outline-teal-300/30 rounded-xl">
                             <div className="p-2">
                                 <Textarea
-                                    value={prompt.current}
+                                    value={prompt}
                                     placeholder="Write a prompt..."
-                                    onChange={(e) => prompt.current = e.target.value}
+                                    onChange={(e) => setPrompt(e.target.value)}
                                     className="w-full placeholder:text-gray-400/60 shadow-none bg-transparent border-none text-md rounded-none focus-visible:ring-0 min-h-16 max-h-80 resize-none outline-none"
                                 />
                             </div>
@@ -96,7 +87,7 @@ export const Project: React.FC<{ projectId: string, sessionUrl: string, previewU
                                 <Button
                                     type="submit"
                                     className="h-10 w-10 cursor-pointer rounded-full bg-teal-200/10 hover:bg-teal-300/20 flex items-center justify-center"
-                                    disabled={!prompt.current}
+                                    disabled={!prompt}
                                 >
                                     <MoveUpRight className="w-10 h-10 text-teal-300/70" />
                                 </Button>
@@ -119,11 +110,7 @@ export const Project: React.FC<{ projectId: string, sessionUrl: string, previewU
                                 />
                             </div>
                             <div className={`${tab === "preview" ? "left-0 flex-1" : tab === "split" ? "left-0 flex-1" : "left-full flex-0"} position-absolute transition-all duration-300 h-full w-full`}>
-                                <iframe
-                                    src={`${previewUrl}/`}
-                                    className="w-full h-full rounded-lg"
-                                    title="Project Worker"
-                                />
+                                <PreviewIframe url={`${previewUrl}/`} />
                             </div>
                         </div>
                 </div>
