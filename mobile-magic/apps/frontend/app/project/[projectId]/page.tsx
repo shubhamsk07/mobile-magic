@@ -1,4 +1,3 @@
-"use client"
 import axios from "axios";
 import { K8S_ORCHESTRATOR_URL } from "@/config";
 import ProjectWithInitRequest from "@/components/ProjectWithInitRequest";

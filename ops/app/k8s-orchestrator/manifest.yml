@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: k8s-orchestrator
-          image: 100xdevs/k8s-orchestrator:v2
+          image: 100xdevs/antidevs-k8s-orchestrator:2e412f04165e317ba6866678afc635c364b01f3f
           ports:
             - containerPort: 7001
           env:
